@@ -57,6 +57,9 @@ struct Vec3
         *this = (*this) * (l / norm());
         return *this;
     }
+    Vec2<t> xy() {
+        return Vec2<t>(x, y);
+    }
     template <class>
     friend std::ostream &operator<<(std::ostream &s, Vec3<t> &v);
 };

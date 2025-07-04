@@ -69,61 +69,39 @@ double signed_triangle_area(Vec2i a, Vec2i b, Vec2i c) {
     return .5*((b.y-a.y)*(b.x+a.x) + (c.y-b.y)*(c.x+b.x) + (a.y-c.y)*(a.x+c.x));
 }
 
-void draw_triangle_no_z_buffer(Vec2i a, Vec2i b, Vec2i c, TGAColor color, TGAImage& img) {    
+void draw_triangle(Vec3i a, Vec3i b, Vec3i c, TGAColor color, TGAImage& img, TGAImage& z_buffer) {    
     // bounding box
     int minx = std::min(a.x, std::min(b.x, c.x));
     int miny = std::min(a.y, std::min(b.y, c.y));
     int maxx = std::max(a.x, std::max(b.x, c.x));
     int maxy = std::max(a.y, std::max(b.y, c.y));
 
-    double total_area = signed_triangle_area(a, b, c);
-    for (int y = miny; y <= maxy; y++) {
-        for (int x = minx; x <= maxx; x++) {
-            Vec2i p = Vec2i(x, y);
-            double alpha = signed_triangle_area(p, b, c) / total_area;
-            double beta = signed_triangle_area(p, c, a) / total_area;
-            double gamma = signed_triangle_area(p, a, b) / total_area;
-            bool inside = alpha >= 0 && alpha <= 1 && beta >= 0 && beta <= 1 && gamma >= 0 && gamma <= 1;
-            if (inside) {
-                img.set(x, y, color);
-            }
-        }
+    double total_area = signed_triangle_area(a.xy(), b.xy(), c.xy());
+
+    if (total_area <= 0) {
+        return;
     }
-}
 
-void draw_triangle(Vec3f a, Vec3f b, Vec3f c, TGAColor color, TGAImage& img, std::vector<float>& zbuffer) {    
-    Vec2i ai = Vec2i(roundftoi(a.x), roundftoi(a.y));
-    Vec2i bi = Vec2i(roundftoi(b.x), roundftoi(b.y));
-    Vec2i ci = Vec2i(roundftoi(c.x), roundftoi(c.y));
-
-    // bounding box
-    int minx = std::min(ai.x, std::min(bi.x, ci.x));
-    int miny = std::min(ai.y, std::min(bi.y, ci.y));
-    int maxx = std::max(ai.x, std::max(bi.x, ci.x));
-    int maxy = std::max(ai.y, std::max(bi.y, ci.y));
-
-    double total_area = signed_triangle_area(ai, bi, ci);
     for (int y = miny; y <= maxy; y++) {
         for (int x = minx; x <= maxx; x++) {
             Vec2i p = Vec2i(x, y);
-            double alpha = signed_triangle_area(p, bi, ci) / total_area;
-            double beta = signed_triangle_area(p, ci, ai) / total_area;
-            double gamma = signed_triangle_area(p, ai, bi) / total_area;
+            double alpha = signed_triangle_area(p, b.xy(), c.xy()) / total_area;
+            double beta = signed_triangle_area(p, c.xy(), a.xy()) / total_area;
+            double gamma = signed_triangle_area(p, a.xy(), b.xy()) / total_area;
             bool inside = alpha >= 0 && alpha <= 1 && beta >= 0 && beta <= 1 && gamma >= 0 && gamma <= 1;
             if (!inside) {
                 continue;
             }
-
-            float z_value = a.z * alpha + b.z * beta + c.z * gamma;
-            if (z_value > zbuffer[y * WIDTH + x]) {
-                zbuffer[y * WIDTH + x] = z_value;
+            unsigned char z_for_pixel = static_cast<unsigned char>(alpha * a.z + beta * b.z + gamma * c.z);
+            if (z_for_pixel > z_buffer.get(x, y).bgra[0]) {
+                z_buffer.set(x, y, {z_for_pixel, z_for_pixel, z_for_pixel, 255});
                 img.set(x, y, color);
             }
         }
     }
 }
 
-void draw_model(Model model, float zoom, TGAColor color, TGAImage &img, Vec3f light_dir, std::vector<float>& zbuffer) {
+void draw_model(Model model, float zoom, TGAColor color, TGAImage &img, TGAImage& z_buffer) {
     for (int i = 0; i < model.nfaces(); i++)
     {
         std::vector<int> face = model.face(i);
@@ -134,20 +112,15 @@ void draw_model(Model model, float zoom, TGAColor color, TGAImage &img, Vec3f li
         Vec3f v1_world = model.vert(face[1]);
         Vec3f v2_world = model.vert(face[2]);
 
-        Vec3f v0_screen = Vec3f((v0_world.x + zoom/2) * img.width() / zoom, (v0_world.y + zoom/2) * img.height() / zoom, v0_world.z);
-        Vec3f v1_screen = Vec3f((v1_world.x + zoom/2) * img.width() / zoom, (v1_world.y + zoom/2) * img.height() / zoom, v1_world.z);
-        Vec3f v2_screen = Vec3f((v2_world.x + zoom/2) * img.width() / zoom, (v2_world.y + zoom/2) * img.height() / zoom, v2_world.z);
+        Vec3f v0_screen = Vec3f((v0_world.x + zoom/2) * img.width() / zoom, (v0_world.y + zoom/2) * img.height() / zoom, (v0_world.z + 1.) *   255./2);
+        Vec3f v1_screen = Vec3f((v1_world.x + zoom/2) * img.width() / zoom, (v1_world.y + zoom/2) * img.height() / zoom, (v1_world.z + 1.) *   255./2);
+        Vec3f v2_screen = Vec3f((v2_world.x + zoom/2) * img.width() / zoom, (v2_world.y + zoom/2) * img.height() / zoom, (v2_world.z + 1.) *   255./2);
 
-        Vec3f v0 = v1_world - v0_world;
-        Vec3f v1 = v2_world - v0_world;
-        Vec3f normal = (v1^v0).normalize();
-        float light_intensity = normal * light_dir;
-        if (light_intensity <= 0) {
-            continue;
-        }
-        unsigned char color_value = roundftoi(light_intensity * 255);
-        color = TGAColor{color_value, color_value, color_value, 255};
-        draw_triangle(v0_screen, v1_screen, v2_screen, color, img, zbuffer);
-        // draw_triangle_no_z_buffer(Vec2i(roundftoi(v0_screen.x), roundftoi(v0_screen.y)), Vec2i(roundftoi(v1_screen.x), roundftoi(v1_screen.y)), Vec2i(roundftoi(v2_screen.x), roundftoi(v2_screen.y)), color, img);
+        color = TGAColor{static_cast<unsigned char>(rand()%255), static_cast<unsigned char>(rand()%255), static_cast<unsigned char>(rand()%255), 255};
+        draw_triangle(
+            Vec3i(roundftoi(v0_screen.x), roundftoi(v0_screen.y), roundftoi(v0_screen.z)),
+            Vec3i(roundftoi(v1_screen.x), roundftoi(v1_screen.y), roundftoi(v1_screen.z)),
+            Vec3i(roundftoi(v2_screen.x), roundftoi(v2_screen.y), roundftoi(v2_screen.z)),
+            color, img, z_buffer);
     }
 }
