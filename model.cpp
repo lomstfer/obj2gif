@@ -31,7 +31,7 @@ Model::Model(std::string filename) : verts_(), faces_()
         {
             Vec3f v;
 
-            iss >> v.raw[0] >> v.raw[1] >> v.raw[2];
+            iss >> v.x >> v.y >> v.z;
             verts_.push_back(v);
         }
         else if (prefix == "f")
