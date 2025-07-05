@@ -74,10 +74,10 @@ double signed_triangle_area(Vec2i a, Vec2i b, Vec2i c)
 void draw_triangle(Vec3i a, Vec3i b, Vec3i c, TGAColor color, TGAImage &img, std::vector<float>& z_buffer)
 {
     // bounding box
-    int minx = std::min(a.x, std::min(b.x, c.x));
-    int miny = std::min(a.y, std::min(b.y, c.y));
-    int maxx = std::max(a.x, std::max(b.x, c.x));
-    int maxy = std::max(a.y, std::max(b.y, c.y));
+    int minx = std::max(std::min(a.x, std::min(b.x, c.x)), 0);
+    int miny = std::max(std::min(a.y, std::min(b.y, c.y)), 0);
+    int maxx = std::min(std::max(a.x, std::max(b.x, c.x)), WIDTH-1);
+    int maxy = std::min(std::max(a.y, std::max(b.y, c.y)), HEIGHT-1);
 
     double total_area = signed_triangle_area(a.xy(), b.xy(), c.xy());
 
@@ -99,7 +99,9 @@ void draw_triangle(Vec3i a, Vec3i b, Vec3i c, TGAColor color, TGAImage &img, std
             {
                 continue;
             }
+
             unsigned char z_for_pixel = static_cast<unsigned char>(alpha * a.z + beta * b.z + gamma * c.z);
+
             if (z_for_pixel > z_buffer[y * WIDTH + x])
             {
                 z_buffer[y * WIDTH + x] = z_for_pixel;
@@ -136,9 +138,20 @@ void draw_model(Model model, float zoom, TGAColor color, TGAImage &img, std::vec
         v1_world = v1_world * (1 / (1 - v1_world.z / cam_pos));
         v2_world = v2_world * (1 / (1 - v2_world.z / cam_pos));
 
-        Vec3f v0_screen = Vec3f((v0_world.x + zoom / 2) * img.width() / zoom, (v0_world.y + zoom / 2) * img.height() / zoom, v0_world.z);
-        Vec3f v1_screen = Vec3f((v1_world.x + zoom / 2) * img.width() / zoom, (v1_world.y + zoom / 2) * img.height() / zoom, v1_world.z);
-        Vec3f v2_screen = Vec3f((v2_world.x + zoom / 2) * img.width() / zoom, (v2_world.y + zoom / 2) * img.height() / zoom, v2_world.z);
+
+        Mat4<float> viewport_mat = Mat4<float>(
+            WIDTH/2.f, 0,          0, 0 + WIDTH/2.f,
+            0,         HEIGHT/2.f, 0, 0 + HEIGHT/2.f,
+            0,         0,          1, 0,
+            0,         0,          0, 1);
+
+        Vec3f v0_screen = (viewport_mat * Vec4<float>(v0_world.x, v0_world.y, v0_world.z, 1)).xyz();
+        Vec3f v1_screen = (viewport_mat * Vec4<float>(v1_world.x, v1_world.y, v1_world.z, 1)).xyz();
+        Vec3f v2_screen = (viewport_mat * Vec4<float>(v2_world.x, v2_world.y, v2_world.z, 1)).xyz();
+
+        // Vec3f v0_screen = Vec3f((v0_world.x + zoom / 2) * img.width() / zoom, (v0_world.y + zoom / 2) * img.height() / zoom, v0_world.z);
+        // Vec3f v1_screen = Vec3f((v1_world.x + zoom / 2) * img.width() / zoom, (v1_world.y + zoom / 2) * img.height() / zoom, v1_world.z);
+        // Vec3f v2_screen = Vec3f((v2_world.x + zoom / 2) * img.width() / zoom, (v2_world.y + zoom / 2) * img.height() / zoom, v2_world.z);
 
         color = TGAColor{static_cast<unsigned char>(rand() % 255), static_cast<unsigned char>(rand() % 255), static_cast<unsigned char>(rand() % 255), 255};
         draw_triangle(

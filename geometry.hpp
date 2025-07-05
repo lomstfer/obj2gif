@@ -76,6 +76,9 @@ struct Vec4
         this->z = z;
         this->w = w;
     }
+    Vec3<t> xyz() {
+        return Vec3<t>(x, y, z);
+    }
     template <class>
     friend std::ostream &operator<<(std::ostream &s, Vec2<t> &v);
 };

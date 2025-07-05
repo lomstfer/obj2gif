@@ -14,8 +14,9 @@ int main()
     Model model("evil.obj");
     const float zoom = 2;
     
-    draw_model(model, zoom, WHITE, image, z_buffer);
-    
     Log("hej")
+    draw_model(model, zoom, WHITE, image, z_buffer);
+    Log("hej2")
+    
     image.write_tga_file("output.tga");
 }
