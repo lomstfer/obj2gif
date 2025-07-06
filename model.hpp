@@ -3,20 +3,20 @@
 
 #include <vector>
 #include "geometry.hpp"
-#include "tgaimage.hpp"
 
-class Model {
+class Model
+{
 private:
-	std::vector<Vec3f> verts_;
-	std::vector<std::vector<int> > faces_;
+    std::vector<Vec3f> verts_;
+    std::vector<std::vector<int>> faces_;
+
 public:
-	Model(std::string filename);
-	~Model();
-	int nverts();
-	int nfaces();
-	Vec3f vert(int i);
-	std::vector<int> face(int idx);
-    void draw(float zoom, TGAColor color, TGAImage &img);
+    Model(std::string filename);
+    ~Model();
+    int nverts();
+    int nfaces();
+    Vec3f vert(int i);
+    std::vector<int> face(int idx);
 };
 
 #endif //__MODEL_H__
