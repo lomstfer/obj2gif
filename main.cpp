@@ -29,18 +29,16 @@ int main()
     std::vector<float> z_buffer(WIDTH * HEIGHT, -std::numeric_limits<float>::max());
     std::vector<uint8_t>
         frame(WIDTH * HEIGHT * 4);
-    Model model("head.obj");
+    Model model("cow.obj");
 
-    const float zoom = 2;
-
-    const int nframes = 700;
-    const int delay = 2;
+    const int nframes = 200;
+    const int delay = std::max(2, 500 / nframes);
     GifWriter g;
     GifBegin(&g, "animation.gif", WIDTH, HEIGHT, delay);
 
     for (int i = 0; i < nframes; i++)
     {
-        draw_model(model, zoom, 2 * 3.1415f / nframes * i, Color{0, 255, 255, 255}, frame, z_buffer);
+        draw_model(model, 2 * 3.1415f / nframes * i, Color{0, 255, 255, 255}, frame, z_buffer);
         flip_frame_vertical(frame, WIDTH, HEIGHT);
 
         GifWriteFrame(&g, frame.data(), WIDTH, HEIGHT, delay);

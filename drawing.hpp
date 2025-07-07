@@ -54,7 +54,7 @@ void draw_triangle(Vec3i a, Vec3i b, Vec3i c, Color color, std::vector<uint8_t> 
     }
 }
 
-void draw_model(Model model, float zoom, float angle, Color color, std::vector<uint8_t> &image, std::vector<float> &z_buffer)
+void draw_model(Model model, float angle, Color color, std::vector<uint8_t> &image, std::vector<float> &z_buffer)
 {
     for (int i = 0; i < model.nfaces(); i++)
     {
@@ -75,7 +75,8 @@ void draw_model(Model model, float zoom, float angle, Color color, std::vector<u
         v2_world = rot_y_mat * v2_world;
 
         // perspective
-        float cam_pos = 10;
+        float model_max_radius = sqrt(model.max_x * model.max_x + model.max_z * model.max_z);
+        float cam_pos = model_max_radius * 3;
         v0_world = v0_world * (1 / (1 - v0_world.z / cam_pos));
         v1_world = v1_world * (1 / (1 - v1_world.z / cam_pos));
         v2_world = v2_world * (1 / (1 - v2_world.z / cam_pos));
@@ -89,9 +90,18 @@ void draw_model(Model model, float zoom, float angle, Color color, std::vector<u
                                                             : light_value;
 
         float z_scale = 1000;
-        Vec3f v0_screen = Vec3f((v0_world.x + zoom / 2) * WIDTH / zoom, (v0_world.y + zoom / 2) * HEIGHT / zoom, (v0_world.z + 1) / 2.f * z_scale);
-        Vec3f v1_screen = Vec3f((v1_world.x + zoom / 2) * WIDTH / zoom, (v1_world.y + zoom / 2) * HEIGHT / zoom, (v1_world.z + 1) / 2.f * z_scale);
-        Vec3f v2_screen = Vec3f((v2_world.x + zoom / 2) * WIDTH / zoom, (v2_world.y + zoom / 2) * HEIGHT / zoom, (v2_world.z + 1) / 2.f * z_scale);
+        Vec3f v0_screen = Vec3f(
+            remap(v0_world.x, model.min_x, model.max_x, WIDTH / 4, WIDTH - WIDTH / 4),
+            remap(v0_world.y, model.min_y, model.max_y, HEIGHT / 4, HEIGHT - HEIGHT / 4),
+            (v0_world.z + model_max_radius) * z_scale);
+        Vec3f v1_screen = Vec3f(
+            remap(v1_world.x, model.min_x, model.max_x, WIDTH / 4, WIDTH - WIDTH / 4),
+            remap(v1_world.y, model.min_y, model.max_y, HEIGHT / 4, HEIGHT - HEIGHT / 4),
+            (v1_world.z + model_max_radius) * z_scale);
+        Vec3f v2_screen = Vec3f(
+            remap(v2_world.x, model.min_x, model.max_x, WIDTH / 4, WIDTH - WIDTH / 4),
+            remap(v2_world.y, model.min_y, model.max_y, HEIGHT / 4, HEIGHT - HEIGHT / 4),
+            (v2_world.z + model_max_radius) * z_scale);
 
         float r = (float)color.r * light_value;
         float g = (float)color.g * light_value;

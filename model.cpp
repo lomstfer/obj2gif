@@ -17,7 +17,6 @@ Model::Model(std::string filename) : verts_(), faces_()
 
     while (std::getline(in, line))
     {
-
         if (line.empty() || line[0] == '#')
         {
             continue;
@@ -33,6 +32,13 @@ Model::Model(std::string filename) : verts_(), faces_()
 
             iss >> v.x >> v.y >> v.z;
             verts_.push_back(v);
+
+            min_x = std::min(v.x, min_x);
+            min_y = std::min(v.y, min_y);
+            min_z = std::min(v.z, min_z);
+            max_x = std::max(v.x, max_x);
+            max_y = std::max(v.y, max_y);
+            max_z = std::max(v.z, max_z);
         }
         else if (prefix == "f")
         {

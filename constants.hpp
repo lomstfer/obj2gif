@@ -1,4 +1,4 @@
 #pragma once
 
-const int WIDTH = 300;
-const int HEIGHT = 300;
+const int WIDTH = 512;
+const int HEIGHT = 512;
