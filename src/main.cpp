@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     std::vector<uint8_t>
         frame(WIDTH * HEIGHT * 4);
 
-    std::string model_file = "test.obj";
+    std::string model_file = "cube.obj";
     if (argc > 1)
     {
         model_file = argv[1];
