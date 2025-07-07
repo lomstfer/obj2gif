@@ -24,12 +24,24 @@ void flip_frame_vertical(std::vector<uint8_t> &frame, int width, int height)
     }
 }
 
-int main()
+int main(int argc, char *argv[])
 {
     std::vector<float> z_buffer(WIDTH * HEIGHT, -std::numeric_limits<float>::max());
     std::vector<uint8_t>
         frame(WIDTH * HEIGHT * 4);
-    Model model("cow.obj");
+
+    std::string model_file = "test.obj";
+    if (argc > 1)
+    {
+        model_file = argv[1];
+    }
+    else if (!_DEBUG)
+    {
+        Log("usage: obj2gif [filename]");
+        return 0;
+    }
+
+    Model model(model_file);
 
     const int nframes = 200;
     const int delay = std::max(2, 500 / nframes);
