@@ -30,23 +30,26 @@ int main(int argc, char *argv[])
     std::vector<uint8_t>
         frame(WIDTH * HEIGHT * 4);
 
-    std::string model_file = "cube.obj";
-    if (argc > 1)
-    {
-        model_file = argv[1];
-    }
-    else if (!_DEBUG)
-    {
-        Log("usage: obj2gif [filename]");
+    std::string model_file;
+
+#if _DEBUG
+    model_file = "test.obj";
+#else
+    if (argc != 2) {
+        Log("usage: obj2gif <model.obj>");
         return 0;
     }
-
+    else {
+        model_file = argv[1];
+    }
+#endif
     Model model(model_file);
 
     const int nframes = 200;
     const int delay = std::max(2, 500 / nframes);
     GifWriter g;
-    GifBegin(&g, "animation.gif", WIDTH, HEIGHT, delay);
+    std::string gif_filename = model_file + ".gif";
+    GifBegin(&g, gif_filename.c_str(), WIDTH, HEIGHT, delay);
 
     for (int i = 0; i < nframes; i++)
     {
@@ -61,4 +64,5 @@ int main(int argc, char *argv[])
     }
 
     GifEnd(&g);
+    Log("Gif saved as: " + gif_filename);
 }

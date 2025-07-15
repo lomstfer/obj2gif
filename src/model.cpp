@@ -4,12 +4,14 @@
 #include <sstream>
 #include <vector>
 #include "model.hpp"
+#include "util.hpp"
 
-Model::Model(std::string filename) : verts_(), faces_()
+Model::Model(std::string filename) : _verts(), _faces()
 {
     std::ifstream in(filename);
     if (!in)
     {
+        Log("Cannot open file: " + filename);
         throw std::runtime_error("Cannot open file: " + filename);
     }
 
@@ -31,7 +33,7 @@ Model::Model(std::string filename) : verts_(), faces_()
             Vec3f v;
 
             iss >> v.x >> v.y >> v.z;
-            verts_.push_back(v);
+            _verts.push_back(v);
 
             min_x = std::min(v.x, min_x);
             min_y = std::min(v.y, min_y);
@@ -52,11 +54,23 @@ Model::Model(std::string filename) : verts_(), faces_()
 
                 face_indices.push_back(idx - 1);
             }
-            faces_.push_back(face_indices);
+            // triangulation
+            if (face_indices.size() == 4) {
+                int a = face_indices[0];
+                int b = face_indices[1];
+                int c = face_indices[2];
+                int d = face_indices[3];
+                face_indices.pop_back();
+                _faces.push_back({c, d, a});
+            }
+            _faces.push_back(face_indices);
+
         }
     }
 
-    std::cerr << "Model loaded: " << verts_.size() << " vertices, " << faces_.size() << " faces." << std::endl;
+
+
+    std::cerr << "Model loaded: " << _verts.size() << " vertices, " << _faces.size() << " faces." << std::endl;
 }
 
 Model::~Model()
@@ -65,20 +79,20 @@ Model::~Model()
 
 int Model::nverts()
 {
-    return (int)verts_.size();
+    return (int)_verts.size();
 }
 
 int Model::nfaces()
 {
-    return (int)faces_.size();
+    return (int)_faces.size();
 }
 
 std::vector<int> Model::face(int idx)
 {
-    return faces_[idx];
+    return _faces[idx];
 }
 
 Vec3f Model::vert(int i)
 {
-    return verts_[i];
+    return _verts[i];
 }

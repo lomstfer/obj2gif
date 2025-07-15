@@ -1,5 +1,5 @@
-#ifndef __MODEL_H__
-#define __MODEL_H__
+#pragma once
+
 
 #include <vector>
 #include "geometry.hpp"
@@ -7,8 +7,8 @@
 class Model
 {
 private:
-    std::vector<Vec3f> verts_;
-    std::vector<std::vector<int>> faces_;
+    std::vector<Vec3f> _verts;
+    std::vector<std::vector<int>> _faces;
 
 public:
     Model(std::string filename);
@@ -24,5 +24,3 @@ public:
     float max_y = -std::numeric_limits<float>::max();
     float max_z = -std::numeric_limits<float>::max();
 };
-
-#endif //__MODEL_H__

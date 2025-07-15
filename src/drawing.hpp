@@ -91,26 +91,26 @@ void draw_model(Model model, float angle, Color color, std::vector<uint8_t> &ima
 
         float z_scale = 1000;
         Vec3f v0_screen = Vec3f(
-            remap(v0_world.x, model.min_x, model.max_x, WIDTH / 4, WIDTH - WIDTH / 4),
-            remap(v0_world.y, model.min_y, model.max_y, HEIGHT / 4, HEIGHT - HEIGHT / 4),
+            util::remap(v0_world.x, model.min_x, model.max_x, WIDTH / 4, WIDTH - WIDTH / 4),
+            util::remap(v0_world.y, model.min_y, model.max_y, HEIGHT / 4, HEIGHT - HEIGHT / 4),
             (v0_world.z + model_max_radius) * z_scale);
         Vec3f v1_screen = Vec3f(
-            remap(v1_world.x, model.min_x, model.max_x, WIDTH / 4, WIDTH - WIDTH / 4),
-            remap(v1_world.y, model.min_y, model.max_y, HEIGHT / 4, HEIGHT - HEIGHT / 4),
+            util::remap(v1_world.x, model.min_x, model.max_x, WIDTH / 4, WIDTH - WIDTH / 4),
+            util::remap(v1_world.y, model.min_y, model.max_y, HEIGHT / 4, HEIGHT - HEIGHT / 4),
             (v1_world.z + model_max_radius) * z_scale);
         Vec3f v2_screen = Vec3f(
-            remap(v2_world.x, model.min_x, model.max_x, WIDTH / 4, WIDTH - WIDTH / 4),
-            remap(v2_world.y, model.min_y, model.max_y, HEIGHT / 4, HEIGHT - HEIGHT / 4),
+            util::remap(v2_world.x, model.min_x, model.max_x, WIDTH / 4, WIDTH - WIDTH / 4),
+            util::remap(v2_world.y, model.min_y, model.max_y, HEIGHT / 4, HEIGHT - HEIGHT / 4),
             (v2_world.z + model_max_radius) * z_scale);
 
         float r = (float)color.r * light_value;
         float g = (float)color.g * light_value;
         float b = (float)color.b * light_value;
-        Color color_result = Color{(uint8_t)roundftoi(r), (uint8_t)roundftoi(g), (uint8_t)roundftoi(b), color.a};
+        Color color_result = Color{(uint8_t)util::roundftoi(r), (uint8_t)util::roundftoi(g), (uint8_t)util::roundftoi(b), color.a};
         draw_triangle(
-            Vec3i(roundftoi(v0_screen.x), roundftoi(v0_screen.y), roundftoi(v0_screen.z)),
-            Vec3i(roundftoi(v1_screen.x), roundftoi(v1_screen.y), roundftoi(v1_screen.z)),
-            Vec3i(roundftoi(v2_screen.x), roundftoi(v2_screen.y), roundftoi(v2_screen.z)),
+            Vec3i(util::roundftoi(v0_screen.x), util::roundftoi(v0_screen.y), util::roundftoi(v0_screen.z)),
+            Vec3i(util::roundftoi(v1_screen.x), util::roundftoi(v1_screen.y), util::roundftoi(v1_screen.z)),
+            Vec3i(util::roundftoi(v2_screen.x), util::roundftoi(v2_screen.y), util::roundftoi(v2_screen.z)),
             color_result, image, z_buffer);
     }
 }
